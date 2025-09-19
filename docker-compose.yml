@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  n8n:
+    image: n8nio/n8n:latest
+    restart: unless-stopped
+    environment:
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_HOST=0.0.0.0
+      - N8N_PORT=5678
+    ports:
+      - "5678:5678"
+    volumes:
+      - ./n8n:/home/node/.n8n
+    env_file:
+      - .env
+
+  media-worker:
+    build: ./media-worker
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./media-worker/data:/tmp/media
+    ports:
+      - "4000:4000"
+    depends_on:
+      - n8n
+
+  webhooks:
+    build: ./webhooks
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
